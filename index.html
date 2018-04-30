@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style type="text/css">
+        button,
+        div,
+        form,
+        input {
+          margin: 10px;
+        }
+      </style>
+</head>
+
+<body>
+    <div id="gif-view"></div>
+    <div id="buttons">
+        
+        <form id="gif-form">
+            <label for="gif-input">Add a GIF Bro</label>
+            <input type="text" id="gif-input">
+            <br>
+
+            <!-- Button triggers new movie to be added -->
+            <input id="add-gif" type="submit" value="Add a GIF Bro">
+        </form>
+    </div>
+
+    <div id="gifs-appear-here">
+    </div>
+
+    
+    <script type="text/javascript">
+        var listOfGifs = [];
+
+        function renderButtons() {
+        $("#gif-view").html("");
+        var ss = {class: "listed", style: "list-style-type: none margin: 0 padding: 0"};
+        $("#gif-view").append("<ul class = 'listed' style = 'list-style-type: none; margin: 0; padding: 0;'></ul>");
+        
+        listOfGifs.forEach(function(element){
+          $(".listed").append("<li style = 'Display:inline'><button class = 'lookup' value = '1' id = "+ element.replace(" ", "_")+">"+ element +"</li>");
+        });
+      }
+
+        $("#add-gif").on("click", function(event) {
+
+            event.preventDefault();
+
+            if ($("#gif-input").val() != ""){
+                listOfGifs.push($("#gif-input").val());
+            }
+            renderButtons();
+        });
+
+        $("#gif-view").on("click", ".lookup",function () {
+            var person = $("#"+this.id).html();
+            var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+                person + "&api_key=VxBOE4rZrIF83aMrcWSWhweMu7VlhbTh&limit=10";
+
+            $.ajax({
+                url: queryURL,
+                method: "GET"
+            })
+                .then(function (response) {
+                    var results = response.data;
+
+                    for (var i = 0; i < results.length; i++) {
+                        var gifDiv = $("<div class= 'item' >");
+
+                        var rating = results[i].rating;
+
+                        var p = $("<p>").text("Rating: " + rating);
+
+                        var personImage = $("<img class = 'gif'>");
+                        personImage.attr({ 
+                            "src" : results[i].images.fixed_height_still.url,
+                            "src-still" : results[i].images.fixed_height_still.url,
+                            "src-animated" : results[i].images.fixed_height.url,
+                            "data-state" : "still"
+                        });
+
+                        gifDiv.prepend(p);
+                        gifDiv.prepend(personImage);
+
+                        $("#gifs-appear-here").prepend(gifDiv);
+                    }
+                });
+            });
+
+        $("#gifs-appear-here").on("click", ".gif",function() {
+            
+            var state = $(this).attr("data-state");
+            
+            if (state === "still"){
+                $(this).attr("data-state", "animate");3
+                $(this).attr("src", $(this).attr("src-animated"));
+            }
+            
+            else if (state === "animate"){
+                $(this).attr("src", $(this).attr("src-still"));
+                $(this).attr("data-state", "still")
+            }
+        });
+
+
+    </script>
+</body> 
+
+</html>
